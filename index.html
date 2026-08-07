@@ -569,10 +569,8 @@
     // understand they're meant to play. So instead of relying on the child
     // to notice and tap "תרגול" themselves, the page switches into practice
     // mode automatically once the video reaches that point.
-    // TODO: fill in once Hani gives the exact timestamp (in seconds) from
-    // the video where the practice part begins. Leaving it null disables
-    // the automatic switch entirely — the manual מצב buttons still work.
-    const AUTO_PRACTICE_TIME = null;
+    // 01:09 in the video is where the practice part begins.
+    const AUTO_PRACTICE_TIME = 69;
     let autoSwitchFired = false;
 
     // Calibration tool is dev-only: hidden from students, shown only when
