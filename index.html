@@ -714,14 +714,8 @@
         setTimeout(() => { calibCopyBtn.textContent = 'העתק תוצאות'; }, 2500);
     });
 
-    // Note-timing feedback: not calibrated yet for this song — left empty
-    // until Hani provides the marked timestamps + note letters (same
-    // process used for the other lessons, via the ?admin=1 tool above).
-    // With no notes, practice mode still works (piano + falling-note lane
-    // just stay empty) — the automatic watch→practice switch above doesn't
-    // depend on this being filled in.
-    const songTimes = [];
-    const songLetters = [];
+    const songTimes = [73.91, 81.14, 88.35, 95.14, 102.28, 109.97, 116.58, 123.90, 130.98];
+    const songLetters = ['G', 'E', 'F', 'D', 'C', 'D', 'E', 'F', 'G'];
     const songNotes = songTimes.map((t, i) => ({ time: t, note: songLetters[i] + '4' }));
 
     // Per-key "fill" progress (idea: each correct-in-time press fills up
