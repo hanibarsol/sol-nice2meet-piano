@@ -500,9 +500,15 @@
     // understand they're meant to play. So instead of relying on the child
     // to notice and tap "תרגול" themselves, the page switches into practice
     // mode automatically once the video reaches that point.
-    // 01:09 in the video is where the practice part begins.
-    const AUTO_PRACTICE_TIME = 69;
-    let autoSwitchFired = false;
+    // The video asks kids to play along from 01:09 to 02:13, then moves on
+    // to more content — so the page switches into practice mode
+    // automatically at the start of that stretch and back to watch
+    // automatically once it ends, instead of leaving the child stuck in
+    // the mini-video practice layout through the rest of the video.
+    const AUTO_PRACTICE_START = 69;
+    const AUTO_PRACTICE_END = 133;
+    let autoEnterFired = false;
+    let autoExitFired = false;
 
     // Calibration tool is dev-only: hidden from students, shown only when
     // building/checking a song's timing map via ?admin=1 in the URL.
@@ -586,7 +592,8 @@
             songIdx = 0;
             songHit = false;
             resetKeyFills();
-            autoSwitchFired = false;
+            autoEnterFired = false;
+            autoExitFired = false;
             setMode('watch');
             isPaused = false;
             playPauseBtn.textContent = '⏸';
@@ -600,7 +607,7 @@
     // --- Calibration tool: tap "mark now" every time a character hits the green
     // line, and it logs the exact video timestamp. Not part of the kids' UI —
     // this is a dev tool for building a note-timing map for this song later.
-    // Also doubles as the way to find AUTO_PRACTICE_TIME above: play up to the
+    // Also doubles as the way to find AUTO_PRACTICE_START/END above: play up to the
     // moment the video asks kids to start playing, tap "mark now," and read
     // the timestamp off the list.
     const calibMarks = [];
@@ -1209,15 +1216,19 @@
     // tile are both practice-mode-only: in watch mode nothing is being
     // graded, so nothing should look like it's demanding a correct key.
     // Same poll also drives the automatic watch→practice switch: once the
-    // video crosses AUTO_PRACTICE_TIME, flip into practice mode for the
+    // video crosses AUTO_PRACTICE_START/END, flip into/out of practice mode for the
     // child without waiting for a manual tap.
     setInterval(() => {
         if (!player || !player.getCurrentTime) return;
         const t = player.getCurrentTime();
 
-        if (AUTO_PRACTICE_TIME !== null && !autoSwitchFired && mode === 'watch' && t >= AUTO_PRACTICE_TIME) {
-            autoSwitchFired = true;
+        if (!autoEnterFired && mode === 'watch' && t >= AUTO_PRACTICE_START && t < AUTO_PRACTICE_END) {
+            autoEnterFired = true;
             setMode('practice');
+        }
+        if (!autoExitFired && mode === 'practice' && t >= AUTO_PRACTICE_END) {
+            autoExitFired = true;
+            setMode('watch');
         }
 
         if (songIdx >= songNotes.length) return;
