@@ -406,7 +406,11 @@
         <div id="lesson-video"></div>
     </div>
     <div id="mode-bar">
-        <button id="mode-watch" class="mode-btn active">👀 צפייה</button>
+        <!-- This lesson's watch↔practice switching is fully automatic, timed
+             to the video — a manual "watch" button invites tapping back out
+             of practice for no real reason, so it's hidden (not removed from
+             the DOM, so the auto-switch JS logic stays exactly as it is). -->
+        <button id="mode-watch" class="mode-btn active" style="display:none">👀 צפייה</button>
         <button id="mode-practice" class="mode-btn">🎹 תרגול</button>
     </div>
     <div id="speed-bar">
