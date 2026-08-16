@@ -1314,12 +1314,16 @@
         const cur = songIdx < songNotes.length ? songNotes[songIdx] : null;
         const inWindow = !!cur && t >= cur.time - NOTE_LEAD && t <= cur.time + NOTE_TAIL;
 
-        // Mute just Hani's own key-press moment in the video — the same
-        // window already used for the "due" highlight — so it doesn't
-        // clash with the child's own attempt right then. Her spoken
-        // feedback the rest of the time still needs to be heard.
+        // Mute just Hani's own key-press moment in the video — so it
+        // doesn't clash with the child's own attempt right then. Her
+        // spoken feedback the rest of the time still needs to be heard.
+        // A longer tail than the "due" window's own NOTE_TAIL on purpose —
+        // a real piano note keeps ringing/decaying after the strike, and
+        // NOTE_TAIL alone was cutting the mute before that decay finished.
+        const MUTE_TAIL = 1.0;
+        const muteWindow = !!cur && t >= cur.time - NOTE_LEAD && t <= cur.time + MUTE_TAIL;
         if (player.mute && player.unMute) {
-            if (inWindow) player.mute(); else player.unMute();
+            if (muteWindow) player.mute(); else player.unMute();
         }
 
         if (!cur) return;
