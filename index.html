@@ -213,7 +213,24 @@
             padding: 8px 18px;
             border-radius: 20px;
             font-size: 16px;
-            white-space: nowrap;
+            /* The line is longer than the keywell on a phone, and nowrap
+               meant it simply ran off both ends. Let it wrap instead, and
+               keep it inside the keywell. */
+            white-space: normal;
+            /* centring with left:50% caps the shrink-to-fit width at half
+               the keywell, which broke the line into four; max-content lets
+               it take its natural width and wrap only when it truly must. */
+            width: max-content;
+            /* tied to the keys themselves, not to a percentage: the
+               nearest positioned ancestor is not the keywell, so 100% here
+               resolved against something wider and let it spill out on a
+               narrow phone. */
+            max-width: calc(var(--white-w) * 7 - 8px);
+            /* the cap has to include the pill's own padding, or the box ends
+               up 38px wider than the width it was capped to */
+            box-sizing: border-box;
+            text-align: center;
+            line-height: 1.3;
             z-index: 60;
             opacity: 1;
             transition: opacity 0.4s ease;
@@ -1296,12 +1313,28 @@
         const totalWhiteKeys = 7;
         // Two 96px mirror columns (empty, just to keep the cabinet
         // centered) + grid gaps + cabinet/keywell padding.
-        const reserved = 96 * 2 + 16 * 2 + 40;
+        //
+        // In practice mode those two empty columns are dropped from the
+        // budget. They draw nothing, but reserving 192px of a phone screen
+        // for them pushed the result under the 220px floor below — which is
+        // why a 320px phone and a 390px phone both produced the identical,
+        // smallest possible keyboard. Watch mode keeps the original budget,
+        // so nothing about that half of the lesson moves.
+        const reserved = mode === 'practice'
+            ? 16 * 2 + 40
+            : 96 * 2 + 16 * 2 + 40;
         const rawWidth = Math.min(pianoContainer.clientWidth, window.innerWidth);
         const containerWidth = Math.max(220, rawWidth - reserved);
 
         let whiteW = Math.floor(containerWidth / totalWhiteKeys);
         whiteW = Math.max(24, Math.min(whiteW, 150));
+
+        if (mode === 'practice') {
+            // The cabinet is the keys plus ~51px of keywell and cabinet
+            // trim. Without this the wider budget could push it past the
+            // screen edge, where the centred rig clips it on both sides.
+            while (whiteW > 24 && 7 * whiteW + 51 > rawWidth - 12) whiteW--;
+        }
 
         // Split the space left after the speed bar/chrome roughly evenly
         // between video and piano — but never let the piano take so much
