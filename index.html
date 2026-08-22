@@ -85,11 +85,10 @@
             cursor: pointer;
         }
         .mode-btn.active { background: var(--teal); color: #0a1210; border-color: var(--teal); font-weight: bold; }
-        /* Before the video has reached the practice section for the first
-           time, the practice button is shown but dimmed: the opening of this
-           video is what teaches the child how to press, so skipping straight
-           past it leaves them in practice with no idea what to do. Kept
-           clickable on purpose so the tap can answer with the hint below
+        /* The practice button is dimmed for the whole of watch mode, always —
+           this is not a first-visit lock. The video is what teaches the child
+           how to press, and the video is what decides when practice begins.
+           Kept clickable on purpose so the tap can answer with the hint below
            rather than silently doing nothing, which reads as broken. */
         .mode-btn.locked { opacity: 0.35; cursor: default; }
         #mode-lock-hint {
@@ -559,14 +558,14 @@
         <div id="lesson-video"></div>
     </div>
     <div id="mode-bar">
-        <!-- The switch into and out of practice is automatic, timed to the
-             video. This button used to be hidden on the grounds that a manual
-             one was redundant, but a child who taps "practice" on their own
-             before the timed switch was then stuck in the shrunken layout with
-             no way back to the full-size video. The manual choice deliberately
-             does NOT re-arm the timed entry: having the page pull them back
-             into practice a second after they asked for the video would read
-             as broken. -->
+        <!-- The switch into practice is the video's, not the child's: it is
+             timed to the recording and happens automatically. The practice
+             button is therefore dimmed for the whole of watch mode and only
+             answers with a sentence — it is a signpost, not a door.
+             The watch button, by contrast, must stay visible and live: a child
+             who wants the big video back needs a way out of the shrunken
+             practice layout. It was hidden once on the grounds that a manual
+             control is redundant next to an automatic switch. It is not. -->
         <button id="mode-watch" class="mode-btn active">👀 צפייה</button>
         <button id="mode-practice" class="mode-btn">🎹 תרגול</button>
         <div id="mode-lock-hint" class="hidden">רגע, קודם צופים בהסבר 👀</div>
@@ -661,6 +660,12 @@
         noteLane.classList.toggle('hidden', mode !== 'practice');
         modeWatchBtn.classList.toggle('active', mode === 'watch');
         modePracticeBtn.classList.toggle('active', mode === 'practice');
+        // Practice stays dimmed for the WHOLE of watch mode, every time, for
+        // every child — not only before the video first reaches the practice
+        // section. Entering practice is the video's job (AUTO_PRACTICE_START),
+        // never a tap. A child who is tired of waiting has the speed stepper.
+        // Hani's decision, 2026-08-22. Do not make this conditional again.
+        modePracticeBtn.classList.toggle('locked', mode === 'watch');
         Object.values(keyFillEls).forEach(el => { el.style.opacity = mode === 'practice' ? '1' : '0'; });
         if (mode === 'watch') {
             activeTiles.forEach(tile => tile.remove());
@@ -677,41 +682,30 @@
     }
     modeWatchBtn.addEventListener('click', () => setMode('watch'));
 
-    // The dimmed state is lifted the moment the video first reaches the
-    // practice section, and that fact is remembered so a child who has
-    // already sat through the explanation never has to wait for it again.
-    // The key is namespaced to this lesson because every lesson on the
-    // platform shares one domain, and therefore one localStorage.
-    const INTRO_KEY = 'sol-nice2meet-piano:intro-watched';
+    // There is no longer a "first time" to remember: the dimmed state is not
+    // a lock that gets lifted once, it is simply what the practice button
+    // looks like whenever the lesson is in watch mode. The old
+    // 'sol-nice2meet-piano:intro-watched' localStorage key is therefore gone —
+    // nothing reads it and nothing writes it. If a key is ever needed here
+    // again it must carry the lesson name, because every lesson on the
+    // platform shares one domain and therefore one localStorage.
     const lockHint = document.getElementById('mode-lock-hint');
     let lockHintTimeout = null;
-    let practiceLocked = false;
-
-    function unlockPractice() {
-        if (!practiceLocked) return;
-        practiceLocked = false;
-        modePracticeBtn.classList.remove('locked');
-        lockHint.classList.add('hidden');
-        // storage can throw in private browsing; the lesson must not care
-        try { localStorage.setItem(INTRO_KEY, '1'); } catch (e) {}
-    }
-
-    let introWatched = true;
-    try { introWatched = localStorage.getItem(INTRO_KEY) === '1'; } catch (e) {}
-    if (!introWatched) {
-        practiceLocked = true;
-        modePracticeBtn.classList.add('locked');
-    }
 
     modePracticeBtn.addEventListener('click', () => {
-        if (practiceLocked) {
-            lockHint.classList.remove('hidden');
-            clearTimeout(lockHintTimeout);
-            lockHintTimeout = setTimeout(() => lockHint.classList.add('hidden'), 2600);
-            return;
-        }
-        setMode('practice');
+        // Dimmed is not dead. In watch mode this tap never enters practice —
+        // it answers with a sentence, because a button that does nothing at
+        // all reads to a four-year-old as a fault. Do NOT "fix" this by
+        // adding disabled or pointer-events: none.
+        if (mode !== 'watch') return;
+        lockHint.classList.remove('hidden');
+        clearTimeout(lockHintTimeout);
+        lockHintTimeout = setTimeout(() => lockHint.classList.add('hidden'), 2600);
     });
+
+    // The lesson opens in watch mode, so the button starts dimmed. setMode()
+    // keeps it in step from here on.
+    modePracticeBtn.classList.add('locked');
 
     // This video opens with Hani introducing the characters (watch mode is
     // right for that part), but partway through it moves into "press along
@@ -1458,10 +1452,6 @@
         if (!player || !player.getCurrentTime) return;
         const t = player.getCurrentTime();
 
-        // Lift the dimmed practice button the first time the video reaches
-        // the practice section, whichever mode the child is in.
-        if (t >= AUTO_PRACTICE_START) unlockPractice();
-
         if (!autoEnterFired && mode === 'watch' && t >= AUTO_PRACTICE_START && t < AUTO_PRACTICE_END) {
             autoEnterFired = true;
             setMode('practice');
@@ -1492,7 +1482,6 @@
     // ?mode=practice lets a link open straight into practice mode (same
     // convenience pattern as the existing ?admin=1 for calibration).
     if (new URLSearchParams(location.search).get('mode') === 'practice') {
-        unlockPractice();
         setMode('practice');
     }
 </script>
