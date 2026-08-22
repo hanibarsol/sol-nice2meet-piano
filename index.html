@@ -1167,8 +1167,6 @@
                     const cur = songNotes[songIdx];
                     if (fullNote === cur.note) {
                         const t = player.getCurrentTime();
-
-        if (t >= AUTO_PRACTICE_START) unlockPractice();
                         if (t >= cur.time - NOTE_LEAD && t <= cur.time + NOTE_TAIL) {
                             songHit = true;
                             markTileHit(songIdx);
@@ -1393,6 +1391,10 @@
     setInterval(() => {
         if (!player || !player.getCurrentTime) return;
         const t = player.getCurrentTime();
+
+        // Lift the dimmed practice button the first time the video reaches
+        // the practice section, whichever mode the child is in.
+        if (t >= AUTO_PRACTICE_START) unlockPractice();
 
         if (!autoEnterFired && mode === 'watch' && t >= AUTO_PRACTICE_START && t < AUTO_PRACTICE_END) {
             autoEnterFired = true;
