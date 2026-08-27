@@ -1540,5 +1540,65 @@
   html, body { height: 100svh; }
 }
 </style>
+
+<!-- sol-probe: TEMPORARY. Delete the whole block once the cut-off top is solved. -->
+<style>
+#sol-probe {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 2147483647;
+  background: #000;
+  color: #0F0;
+  font: 700 13px/1.45 ui-monospace, Menlo, Consolas, monospace;
+  direction: ltr;
+  text-align: center;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  pointer-events: none;
+  white-space: pre;
+}
+</style>
+<div id="sol-probe">…</div>
+<script>
+(function () {
+  /* A readout the tester can photograph. The page keeps reporting perfect
+     geometry while the top is visibly cut, so the numbers have to come from
+     the broken device itself, at the broken moment. Bottom edge, because that
+     is the part that stays on screen when the top goes missing. */
+  var el = document.getElementById("sol-probe");
+  function n(x) { return Math.round(x); }
+  function who(e) {
+    if (!e) return "-";
+    var t = e.tagName.toLowerCase();
+    var c = (typeof e.className === "string" && e.className) ? "." + e.className.trim().split(/s+/)[0] : "";
+    return (t + c).slice(0, 18);
+  }
+  function draw() {
+    var vv = window.visualViewport;
+    var btn = document.querySelector(".sol-home-btn");
+    var r = btn ? btn.getBoundingClientRect() : null;
+    var hit = r ? document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) : null;
+    var l1 = "S" + (vv ? vv.scale.toFixed(2) : "?") +
+             " VT" + (vv ? n(vv.offsetTop) : "?") +
+             " VH" + (vv ? n(vv.height) : "?") +
+             " IH" + n(window.innerHeight) +
+             " CH" + n(document.documentElement.clientHeight) +
+             " SH" + n(window.screen.height);
+    var l2 = "BT" + (r ? n(r.top) : "?") +
+             " HIT " + who(hit) +
+             " SY" + n(window.scrollY) +
+             " DT" + n(document.scrollingElement ? document.scrollingElement.scrollTop : 0);
+    el.textContent = l1 + "
+" + l2;
+  }
+  draw();
+  setInterval(draw, 500);
+  window.addEventListener("resize", draw);
+  window.addEventListener("orientationchange", draw);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", draw);
+    window.visualViewport.addEventListener("scroll", draw);
+  }
+})();
+</script>
 </body>
 </html>
