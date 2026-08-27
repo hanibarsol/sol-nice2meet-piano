@@ -1581,12 +1581,16 @@
              " VT" + (vv ? n(vv.offsetTop) : "?") +
              " VH" + (vv ? n(vv.height) : "?") +
              " IH" + n(window.innerHeight) +
-             " CH" + n(document.documentElement.clientHeight) +
-             " SH" + n(window.screen.height);
+             " OH" + n(window.outerHeight) +
+             " SH" + n(window.screen.height) +
+             " AH" + n(window.screen.availHeight);
+    var de = document.documentElement.getBoundingClientRect();
     var l2 = "BT" + (r ? n(r.top) : "?") +
-             " HIT " + who(hit) +
-             " SY" + n(window.scrollY) +
-             " DT" + n(document.scrollingElement ? document.scrollingElement.scrollTop : 0);
+             " DE" + n(de.top) +
+             " PY" + n(window.pageYOffset) +
+             " VL" + (vv ? n(vv.offsetLeft) : "?") +
+             " VPH" + (vv ? n(vv.pageTop) : "?") +
+             " HIT " + who(hit);
     el.textContent = l1 + String.fromCharCode(10) + l2;
   }
   draw();
