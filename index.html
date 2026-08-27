@@ -1518,21 +1518,26 @@
 })();
 </script>
 
+
 <style>
-/* sol-above-video: keep the corner buttons above the video player.
+/* sol-fit-visible-screen: measure the page against the screen the child can
+   actually see.
 
-   On iOS an embedded player is composited by the system in a layer of its own, and it can end
-   up drawn over elements that sit above it in the stacking order. Hani's tester photographed it:
-   the lesson open, the video filling the top, and no home button or arrows anywhere - while the
-   page itself reported them present, unzoomed and eight pixels from the top. It happens only in
-   the three lessons that carry a video; no other lesson has ever shown it.
+   The page above asks for height: 100%. On a phone that resolves against the
+   screen WITHOUT the browser bars - but the address bar and the toolbar are
+   really there, taking their space. So the page comes out taller than the
+   opening, and the strip that gets pushed past the top edge is exactly the
+   one holding the home button and the arrows.
 
-   translateZ(0) puts the buttons on a compositing layer of their own, which is what makes iOS
-   respect the order. Nothing moves and nothing changes anywhere else. */
-.sol-home-btn, .sol-nav, .sol-nav-btn {
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  z-index: 2147483000 !important;
+   Hani's tester never saw this for days, because she opened the lesson from a
+   home-screen shortcut, which has no bars at all and no excess height. The day
+   she opened it from an email instead, the bars appeared and the top went with
+   them. Refreshing always restored it; on a computer it never happened once.
+
+   svh is the height with the bars showing, so the page fits whatever is open.
+   Nothing moves, and a browser that does not know the unit keeps the old rule. */
+@supports (height: 100svh) {
+  html, body { height: 100svh; }
 }
 </style>
 </body>
