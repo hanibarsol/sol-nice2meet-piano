@@ -1626,6 +1626,16 @@
    Chrome on iOS only. Safari, Android, iPad and desktop never see this rule. */
 html.sol-crios .sol-home-btn { top: calc(8px + var(--sol-crios-drop, 110px)); }
 html.sol-crios .sol-nav      { top: calc(58px + var(--sol-crios-drop, 110px)); }
+
+/* And the lesson itself, not only its buttons. Chrome hides the top of the page,
+   so everything - the video included - has to start that much lower. The page keeps
+   its own height, so the room comes out of the video, the one part built to flex;
+   the piano is untouched. When Chrome behaves, this costs a band of background at
+   the top instead, and nothing is ever cut off either way. */
+html.sol-crios #app {
+  box-sizing: border-box;
+  padding-top: var(--sol-crios-drop, 110px);
+}
 </style>
 <script>
 (function () {
