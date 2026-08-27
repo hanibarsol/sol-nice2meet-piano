@@ -1600,45 +1600,58 @@
 })();
 </script>
 
-<style>
-/* sol-toolbar-resync: one pixel of scroll, so Chrome on iOS lines its
-   toolbars up with the page.
 
-   Measured on the tester's phone while the top was cut off. Every number the
-   page could report was correct: no zoom, viewport 665 of a 852 screen, the
-   home button 8 pixels down, and a hit test at its centre landing on the
-   button itself. Yet it was nowhere on screen.
-
-   The readout strip gave it away. It is glued to the bottom of the page, and
-   in the photograph it floated in mid-screen with black below it - so the
-   page was being painted about 110 pixels higher than it should be. Chrome
-   had granted the page the height that leaves room for its toolbars, then
-   drawn it starting at the top of the window, underneath the address bar.
-   The bar covered exactly the strip holding the title, the home button and
-   the arrows, and the gap it left showed up as black at the bottom.
-
-   Nothing inside the page can see this: no API reports it, which is why every
-   measurement came back clean. What it does explain is all of it - a refresh
-   always fixed it, a pinch revealed the buttons and releasing lost them,
-   every lesson did it, and only one phone did it.
-
-   Chrome loses the sync when a page is locked out of scrolling entirely, as
-   these lessons are. A single pixel is enough to keep it honest, and it is
-   what a refresh effectively does. Children cannot drag the page anyway -
-   touch-action is none - and one pixel does not move anything the eye sees. */
-html { overflow-y: auto; }
-body { min-height: calc(100% + 1px); }
-</style>
 <script>
+/* sol-chrome-ios-resync: make Chrome on iPhone measure the page again.
+
+   Chrome sometimes lays this page out from the very top of the window instead
+   of below its own address bar. Measured on the tester's phone: a 852 screen,
+   106 of address bar, 77 of toolbar, a 669 opening - and Chrome handed the page
+   the correct 666 and then drew it starting three pixels above the screen. The
+   title, the home button and the arrows ended up behind the address bar, and
+   the leftover showed as black along the bottom. Nothing in the page can see
+   this: every value it can read came back correct, and a hit test at the home
+   button's centre landed on the button itself. Safari on the same phone, on the
+   same link, was perfect - which is what pins it on Chrome.
+
+   Two things are known to clear it: reloading, and pinching. Both make Chrome
+   measure the viewport again. This asks for the same thing directly - it rewrites
+   the viewport tag and gives the document a little room to scroll, since Chrome
+   loses the sync on a page locked out of scrolling entirely, as this one is. The
+   room is taken back immediately and any scroll is pushed back to zero, so the
+   lesson never sits displaced.
+
+   Fenced to Chrome on iOS. Safari, Android and desktop never run a line of it. */
 (function () {
-  function nudge() {
-    window.scrollTo(0, 1);
-    requestAnimationFrame(function () { window.scrollTo(0, 0); });
+  if (!/CriOS/.test(navigator.userAgent)) return;
+
+  var meta = document.querySelector("meta[name=viewport]");
+  var base = meta ? meta.getAttribute("content") : null;
+
+  function toZero() { if (window.scrollY !== 0) window.scrollTo(0, 0); }
+
+  function remeasure() {
+    document.documentElement.style.overflowY = "auto";
+    document.body.style.minHeight = "calc(100% + 60px)";
+    if (meta && base) {
+      meta.setAttribute("content", base + ",minimal-ui");
+      requestAnimationFrame(function () { meta.setAttribute("content", base); });
+    }
+    window.scrollTo(0, 60);
+    requestAnimationFrame(function () {
+      window.scrollTo(0, 0);
+      requestAnimationFrame(function () {
+        document.body.style.minHeight = "";
+        document.documentElement.style.overflowY = "";
+      });
+    });
   }
-  nudge();
-  window.addEventListener("load", nudge);
-  window.addEventListener("orientationchange", function () { setTimeout(nudge, 250); });
-  window.addEventListener("pageshow", nudge);
+
+  window.addEventListener("scroll", toZero, { passive: true });
+  remeasure();
+  window.addEventListener("load", remeasure);
+  window.addEventListener("pageshow", remeasure);
+  window.addEventListener("orientationchange", function () { setTimeout(remeasure, 300); });
 })();
 </script>
 </body>
