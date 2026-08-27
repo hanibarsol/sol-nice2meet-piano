@@ -1601,57 +1601,46 @@
 </script>
 
 
+
+<style>
+/* sol-crios-drop: in Chrome on iPhone, sit the corner controls below the strip
+   Chrome hides.
+
+   Chrome sometimes draws this page from the very top of the window rather than
+   below its own address bar, so the top hundred-odd pixels are covered. Measured
+   on the tester's phone: an 852 screen, a 669 opening, and Chrome handing the
+   page a correct 666 and then painting it three pixels above the screen. The home
+   button and the arrows live exactly there and vanish, while every value the page
+   can read says they are in place - a hit test at the button's centre even lands
+   on the button. Safari on the same phone and the same link is perfect.
+
+   Three attempts to make Chrome measure again all failed: a compositing layer, a
+   small-viewport height, a pixel of scroll with the viewport tag rewritten. Chrome
+   does not budge, and nothing in the page exposes the state, so there is nothing
+   to react to. What is left is to stop putting anything in the strip it eats.
+
+   The distance is measured per device rather than fixed: screen height minus the
+   viewport leaves both bars, and Chrome's bottom bar is close to 80. Bounded, so a
+   surprising phone cannot push the buttons into the middle of the lesson.
+
+   Chrome on iOS only. Safari, Android, iPad and desktop never see this rule. */
+html.sol-crios .sol-home-btn { top: calc(8px + var(--sol-crios-drop, 110px)); }
+html.sol-crios .sol-nav      { top: calc(58px + var(--sol-crios-drop, 110px)); }
+</style>
 <script>
-/* sol-chrome-ios-resync: make Chrome on iPhone measure the page again.
-
-   Chrome sometimes lays this page out from the very top of the window instead
-   of below its own address bar. Measured on the tester's phone: a 852 screen,
-   106 of address bar, 77 of toolbar, a 669 opening - and Chrome handed the page
-   the correct 666 and then drew it starting three pixels above the screen. The
-   title, the home button and the arrows ended up behind the address bar, and
-   the leftover showed as black along the bottom. Nothing in the page can see
-   this: every value it can read came back correct, and a hit test at the home
-   button's centre landed on the button itself. Safari on the same phone, on the
-   same link, was perfect - which is what pins it on Chrome.
-
-   Two things are known to clear it: reloading, and pinching. Both make Chrome
-   measure the viewport again. This asks for the same thing directly - it rewrites
-   the viewport tag and gives the document a little room to scroll, since Chrome
-   loses the sync on a page locked out of scrolling entirely, as this one is. The
-   room is taken back immediately and any scroll is pushed back to zero, so the
-   lesson never sits displaced.
-
-   Fenced to Chrome on iOS. Safari, Android and desktop never run a line of it. */
 (function () {
   if (!/CriOS/.test(navigator.userAgent)) return;
-
-  var meta = document.querySelector("meta[name=viewport]");
-  var base = meta ? meta.getAttribute("content") : null;
-
-  function toZero() { if (window.scrollY !== 0) window.scrollTo(0, 0); }
-
-  function remeasure() {
-    document.documentElement.style.overflowY = "auto";
-    document.body.style.minHeight = "calc(100% + 60px)";
-    if (meta && base) {
-      meta.setAttribute("content", base + ",minimal-ui");
-      requestAnimationFrame(function () { meta.setAttribute("content", base); });
-    }
-    window.scrollTo(0, 60);
-    requestAnimationFrame(function () {
-      window.scrollTo(0, 0);
-      requestAnimationFrame(function () {
-        document.body.style.minHeight = "";
-        document.documentElement.style.overflowY = "";
-      });
-    });
+  function place() {
+    var bars = window.screen.height - window.innerHeight;   /* both Chrome bars */
+    var top = bars - 80;                                    /* minus the bottom one */
+    if (top < 90) top = 90;
+    if (top > 140) top = 140;
+    document.documentElement.style.setProperty("--sol-crios-drop", top + "px");
   }
-
-  window.addEventListener("scroll", toZero, { passive: true });
-  remeasure();
-  window.addEventListener("load", remeasure);
-  window.addEventListener("pageshow", remeasure);
-  window.addEventListener("orientationchange", function () { setTimeout(remeasure, 300); });
+  document.documentElement.classList.add("sol-crios");
+  place();
+  window.addEventListener("resize", place);
+  window.addEventListener("orientationchange", function () { setTimeout(place, 300); });
 })();
 </script>
 </body>
