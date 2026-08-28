@@ -1541,10 +1541,14 @@
    video opened in the same Chrome at the same moment was fine. Only the five
    lessons carrying an embedded video do this.
 
-   So the lesson starts below the strip Chrome eats, and the strip itself
-   carries the lesson name in Sol's turquoise. When Chrome behaves it reads as
-   a header; when Chrome misbehaves it is the header that disappears instead of
-   the lesson. Either way nothing the child needs is ever cut off.
+   So the lesson starts below the strip Chrome eats. The strip is the same black
+   as the page, empty and unlabelled, at Hani's request: when Chrome behaves it
+   reads as nothing at all, just a lesson sitting a little lower; when Chrome
+   misbehaves it is the strip that disappears instead of the lesson. Either way
+   nothing the child needs is ever cut off.
+
+   Its height cannot be trimmed. It is exactly what Chrome hides, and anything
+   shorter puts the top of the video back under the address bar.
 
    The height is measured per device and bounded, so no phone can push the
    lesson into the middle of the screen. Chrome on iOS only - Safari, Android,
@@ -1555,21 +1559,11 @@ html.sol-crios .sol-crios-band {
   top: 0; left: 0; right: 0;
   height: var(--sol-crios-drop, 110px);
   z-index: 99;
-  background: #17A79B;
-  color: #FFFFFF;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0 84px 12px;
-  font-family: Arial, sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.25;
-  text-align: center;
+  background: #111111;
   pointer-events: none;
 }
 .sol-crios-band { display: none; }
-html.sol-crios .sol-crios-band { display: flex; }
+html.sol-crios .sol-crios-band { display: block; }
 
 html.sol-crios #app {
   box-sizing: border-box;
@@ -1584,7 +1578,6 @@ html.sol-crios .sol-nav      { top: calc(58px + var(--sol-crios-drop, 110px)); }
 
   var band = document.createElement("div");
   band.className = "sol-crios-band";
-  band.textContent = "היכרות עם החברים המיוחדים";
   document.body.appendChild(band);
 
   function place() {
