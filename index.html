@@ -1550,6 +1550,7 @@
    lesson into the middle of the screen. Chrome on iOS only - Safari, Android,
    iPad and desktop never see a line of this. */
 html.sol-crios .sol-crios-band {
+  box-sizing: border-box;   /* the padding is inside the measured height, not added to it */
   position: fixed;
   top: 0; left: 0; right: 0;
   height: var(--sol-crios-drop, 110px);
